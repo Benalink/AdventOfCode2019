@@ -34,7 +34,16 @@ namespace AdventOfCode2019Tests
             string[][] input = File.ReadAllLines($"{AppContext.BaseDirectory}/Inputs/Day3.txt").Select(line => line.Split(',')).ToArray();
             int closestIntersectionDistance = Solvers.Day3.Part1(input);
 
-            Assert.Equal(0, closestIntersectionDistance);
+            Assert.Equal(1017, closestIntersectionDistance);
+        }
+
+        [Fact]
+        public void Part2SolvesCorrectly()
+        {
+            string[][] input = File.ReadAllLines($"{AppContext.BaseDirectory}/Inputs/Day3.txt").Select(line => line.Split(',')).ToArray();
+            int closestIntersectionDistance = Solvers.Day3.Part2(input);
+
+            Assert.Equal(11432, closestIntersectionDistance);
         }
     }
 }

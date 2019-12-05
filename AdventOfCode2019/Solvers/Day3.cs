@@ -11,6 +11,7 @@ namespace AdventOfCode2019.Solvers
         {
             internal struct Vector2
             {
+
                 public int X;
                 public int Y;
 
@@ -20,9 +21,42 @@ namespace AdventOfCode2019.Solvers
                     this.Y = y;
                 }
 
+                public bool Equals(Vector2 other)
+                {
+                    return X == other.X && Y == other.Y;
+                }
+
+                public override bool Equals(object obj)
+                {
+                    return obj is Vector2 other && Equals(other);
+                }
+
+                public override int GetHashCode()
+                {
+                    unchecked
+                    {
+                        return (X * 397) ^ Y;
+                    }
+                }
+
+                public static bool operator ==(Vector2 left, Vector2 right)
+                {
+                    return left.Equals(right);
+                }
+
+                public static bool operator !=(Vector2 left, Vector2 right)
+                {
+                    return !left.Equals(right);
+                }
+
                 public static Vector2 operator +(Vector2 a, Vector2 b)
                 {
                     return new Vector2(a.X + b.X, a.Y + b.Y);
+                }
+
+                public static Vector2 operator -(Vector2 a, Vector2 b)
+                {
+                    return new Vector2(a.X - b.X, a.Y - b.Y);
                 }
             }
 
@@ -59,6 +93,21 @@ namespace AdventOfCode2019.Solvers
                     }
 
                     return segments;
+                }
+
+                internal static int CountStepsTillPoint(List<LineSegment> lineA, List<LineSegment> lineB, Vector2 intersectionPoint)
+                {
+                    var lastSegment = lineA.Last();
+                    lineA.Add(new LineSegment(lastSegment.End, intersectionPoint));
+                    lastSegment = lineB.Last();
+                    lineB.Add(new LineSegment(lastSegment.End, intersectionPoint));
+
+                    return lineA.Union(lineB).Select(segment =>
+                    {
+                        var delta = segment.End - segment.Start;
+                        return Math.Abs(delta.X) + Math.Abs(delta.Y);
+                    }).Sum();
+
                 }
 
                 internal static Vector2? GetIntersectionPointOfLineSegments(LineSegment a, LineSegment b)
@@ -129,6 +178,35 @@ namespace AdventOfCode2019.Solvers
                 }
 
                 return intersectionPoints.Select(ip => Math.Abs(ip.X) + Math.Abs(ip.Y)).OrderBy(dist => dist).First();
+            }
+
+            internal static int Part2(string[][] lines)
+            {
+                List<List<LineSegment>> segmentsPerLine = lines.Select(LineUtils.GetLineSegmentsFromMoves).ToList();
+                var intersectionPoints = new List<(Vector2 ip, List<LineSegment> line1, List<LineSegment> line2)>();
+
+                int line1SegmentIndex = 0;
+                foreach (var line1Segment in segmentsPerLine[0])
+                {
+                    int line2SegmentIndex = 0;
+                    foreach (var line2Segment in segmentsPerLine[1])
+                    {
+                        Vector2? intersection =
+                            LineUtils.GetIntersectionPointOfLineSegments(line1Segment, line2Segment);
+
+                        if (intersection.HasValue && intersection.Value.X != 0 &&
+                            intersection.Value.X != intersection.Value.Y)
+                        {
+                            intersectionPoints.Add((intersection.Value, segmentsPerLine[0].GetRange(0, line1SegmentIndex), segmentsPerLine[1].GetRange(0, line2SegmentIndex)));
+                        }
+
+                        line2SegmentIndex++;
+                    }
+
+                    line1SegmentIndex++;
+                }
+
+                return intersectionPoints.Select(ip => LineUtils.CountStepsTillPoint(ip.line1, ip.line2, ip.ip)).OrderBy(dist => dist).First();
             }
         }
     }
