@@ -8,7 +8,6 @@ namespace AdventOfCode2019.Solvers
 {
     internal static partial class Solvers
     {
-
         internal class IntcodeComputer
         {
             private int[] memory;
